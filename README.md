@@ -36,10 +36,10 @@ public class MethodLoggerTest {
 控制台输出：
 
 ```
-[INFO ] 2017-10-12 15:46:10.013 [com.kangyonggan.app.monitor.test.MethodLoggerTest] - 方法入参：[1,2]
+[INFO ] 2017-10-12 15:46:10.013 [com.kangyonggan.app.monitor.test.MethodLoggerTest] - <add> args：[1,2]
 a + b = 3
-[INFO ] 2017-10-12 15:46:10.014 [com.kangyonggan.app.monitor.test.MethodLoggerTest] - 方法出参：3
-[INFO ] 2017-10-12 15:46:10.014 [com.kangyonggan.app.monitor.test.MethodLoggerTest] - 方法耗时：0ms
+[INFO ] 2017-10-12 15:46:10.014 [com.kangyonggan.app.monitor.test.MethodLoggerTest] - <add> return：3
+[INFO ] 2017-10-12 15:46:10.014 [com.kangyonggan.app.monitor.test.MethodLoggerTest] - <add> used time：0ms
 ```
 
 ### 自定义日志输出
