@@ -129,6 +129,7 @@ public class MethodLoggerHelp {
             @Override
             public void visitMethodDef(JCTree.JCMethodDecl jcMethodDecl) {
                 params = List.nil();
+                params = params.append(treeMaker.Literal(jcMethodDecl.getName().toString()));
                 for (JCTree.JCVariableDecl decl : jcMethodDecl.getParameters()) {
                     params = params.append(treeMaker.Ident(decl));
                 }
@@ -177,10 +178,10 @@ public class MethodLoggerHelp {
                         fieldAccess = treeMaker.Select(treeMaker.Ident(names.fromString(varName)), names.fromString("logAfter"));
                         try {
                             JCTree.JCReturn jcReturn = (JCTree.JCReturn) tree.getStatements().get(i);
-                            methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.of(jcReturn.getExpression()));
+                            methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.of(params.get(0), jcReturn.getExpression()));
                         } catch (Exception e) {
                             // 无返回值
-                            methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.nil());
+                            methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.of(params.get(0)));
                         }
                         code = treeMaker.Exec(methodInvocation);
                         statements.append(code);
@@ -189,7 +190,7 @@ public class MethodLoggerHelp {
                          * 创建代码（打印耗时）：consoleMethodLoggerHandler.logTime(methodLoggerStartTime, methodLoggerEndTime);
                          */
                         fieldAccess = treeMaker.Select(treeMaker.Ident(names.fromString(varName)), names.fromString("logTime"));
-                        methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.of(treeMaker.Ident(names.fromString("methodLoggerStartTime")), treeMaker.Ident(names.fromString("methodLoggerEndTime"))));
+                        methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.of(params.get(0), treeMaker.Ident(names.fromString("methodLoggerStartTime")), treeMaker.Ident(names.fromString("methodLoggerEndTime"))));
                         code = treeMaker.Exec(methodInvocation);
                         statements.append(code);
                     }

@@ -24,38 +24,48 @@ public class ConsoleMethodLoggerHandler {
      * @param params
      */
     public void logBefore(Object... params) {
-        info("方法入参：" + JSON.toJSONString(params));
-    }
+        Object methodName = params[0];
+        Object[] objs = new Object[params.length - 1];
+        for (int i = 0; i < params.length - 1; i++) {
+            objs[i] = params[i + 1];
+        }
 
-    /**
-     * 打印出参
-     */
-    public void logAfter() {
-        info("方法出参：[]");
+        info("<" + methodName + "> method args：" + JSON.toJSONString(objs));
     }
 
     /**
      * 打印出参
      *
+     * @param methodName
+     */
+    public void logAfter(String methodName) {
+        info("<" + methodName + "> method return：[]");
+    }
+
+    /**
+     * 打印出参
+     *
+     * @param methodName
      * @param returnObj
      */
-    public void logAfter(Object returnObj) {
-        info("方法出参：" + JSON.toJSONString(returnObj));
+    public void logAfter(String methodName, Object returnObj) {
+        info("<" + methodName + "> method return：" + JSON.toJSONString(returnObj));
     }
 
     /**
      * 打印耗时
      *
+     * @param methodName
      * @param startTime
      * @param endTime
      */
-    public void logTime(Long startTime, Long endTime) {
-        info("方法耗时：" + (endTime - startTime) + "ms");
+    public void logTime(String methodName, Long startTime, Long endTime) {
+        info("<" + methodName + "> method used time：" + (endTime - startTime) + "ms");
     }
 
     /**
      * 默认打印方式
-     * 例：[INFO ] 2017-10-12 11:19:35.632 [com.kangyonggan.app.future.biz.UserService] - 方法入参：[1001]
+     * 例：[INFO ] 2017-10-12 11:19:35.632 [com.kangyonggan.app.future.biz.UserService] - <login> method args：[1001]
      *
      * @param msg
      */
