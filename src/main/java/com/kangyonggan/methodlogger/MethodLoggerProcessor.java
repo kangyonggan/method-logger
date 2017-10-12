@@ -69,7 +69,7 @@ public class MethodLoggerProcessor extends AbstractProcessor {
 
                 // 声明成员变量
                 String packageName = ((JCTree.JCClassDecl) trees.getTree(element.getEnclosingElement())).sym.toString();
-                int mofifiers = Flags.PRIVATE | Flags.STATIC | Flags.FINAL;
+                int mofifiers = Flags.PRIVATE;
                 methodLoggerHelp.defineVariable(element, mofifiers, channelName, packageName);
 
                 // 生成增强代码
