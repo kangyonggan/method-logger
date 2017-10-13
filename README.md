@@ -21,14 +21,14 @@ import com.kangyonggan.methodlogger.MethodLogger;
 public class MethodLoggerTest {
 
     @MethodLogger
-    public int add(int a, int b) {
+    public static int add(int a, int b) {
         int c = a + b;
         System.out.println("a + b = " + c);
         return c;
     }
 
     public static void main(String[] args) {
-        new MethodLoggerTest().add(1, 2);
+        add(1, 2);
     }
 }
 ```
@@ -80,4 +80,4 @@ public class MyMethodLoggerHandler extends ConsoleMethodLoggerHandler {
 > * 提示：你可以在覆写的info方法中使用log4j、logback、log4j2输出日志。
 
 ### 待完善
-1. 如果是内部类，又是静态方法，可能会出问题，所有我暂时不支持static方法了，后面再研究。
+1. 可以在class上加注解，等同于在所有method上加注解
