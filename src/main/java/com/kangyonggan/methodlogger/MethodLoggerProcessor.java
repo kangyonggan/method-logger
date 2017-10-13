@@ -57,8 +57,12 @@ public class MethodLoggerProcessor extends AbstractProcessor {
                 AnnotationMirror am = element.getAnnotationMirrors().get(0);
 
                 String value = "com.kangyonggan.methodlogger.ConsoleMethodLoggerHandler";
-                for (AnnotationValue av : am.getElementValues().values()) {
-                   value = av.getValue().toString();
+
+                for (ExecutableElement ee : am.getElementValues().keySet()) {
+                    if (ee.getSimpleName().toString().equals("value")) {
+                        value = am.getElementValues().get(ee).getValue().toString();
+                        break;
+                    }
                 }
 
                 String channelPackage = value.substring(0, value.lastIndexOf("."));
@@ -69,8 +73,7 @@ public class MethodLoggerProcessor extends AbstractProcessor {
 
                 // 声明成员变量
                 String packageName = ((JCTree.JCClassDecl) trees.getTree(element.getEnclosingElement())).sym.toString();
-                int mofifiers = Flags.PRIVATE;
-                methodLoggerHelp.defineVariable(element, mofifiers, channelName, packageName);
+                methodLoggerHelp.defineVariable(element, channelName, packageName);
 
                 // 生成增强代码
                 methodLoggerHelp.generateCode(element, channelName);

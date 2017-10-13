@@ -2,6 +2,7 @@ package com.kangyonggan.methodlogger;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeTranslator;
@@ -49,14 +50,13 @@ public class MethodLoggerHelp {
     }
 
     /**
-     * 声明一个成员变量，如：private static final ConsoleMethodLoggerHandler consoleMethodLoggerHandler = new ConsoleMethodLoggerHandler("包名");
+     * 声明一个成员变量，如：private static ConsoleMethodLoggerHandler consoleMethodLoggerHandler = new ConsoleMethodLoggerHandler("包名");
      *
      * @param element
-     * @param modifiers 修饰符, 如：private static final
      * @param className 类名，如：ConsoleMethodLoggerHandler
      * @param args      参数，如："包名"
      */
-    public void defineVariable(Element element, int modifiers, String className, Object... args) {
+    public void defineVariable(Element element, String className, Object... args) {
         JCTree tree = (JCTree) trees.getTree(element.getEnclosingElement());
         String varName = className.substring(0, 1).toLowerCase() + className.substring(1);
 
@@ -87,12 +87,20 @@ public class MethodLoggerHelp {
                         argList.append(argsExpr);
                     }
 
-                    JCTree.JCExpression typeExpr = treeMaker.Ident(names.fromString(className));
-                    JCTree.JCNewClass newClassExpr = treeMaker.NewClass(null, List.nil(), typeExpr, argList.toList(), null);
-                    JCTree.JCVariableDecl variableDecl = treeMaker.VarDef(treeMaker.Modifiers(modifiers), names.fromString(varName), typeExpr, newClassExpr);
-                    statements.append(variableDecl);
+                    // 判断是不是内部类
+                    int modifiers = Flags.PRIVATE;
+                    if (jcClassDecl.sym != null) {
+                        if (jcClassDecl.sym.flatname.toString().equals(jcClassDecl.sym.fullname.toString())) {
+                            modifiers = modifiers | Flags.STATIC;
+                        }
 
-                    jcClassDecl.defs = statements.toList();
+                        JCTree.JCExpression typeExpr = treeMaker.Ident(names.fromString(className));
+                        JCTree.JCNewClass newClassExpr = treeMaker.NewClass(null, List.nil(), typeExpr, argList.toList(), null);
+                        JCTree.JCVariableDecl variableDecl = treeMaker.VarDef(treeMaker.Modifiers(modifiers), names.fromString(varName), typeExpr, newClassExpr);
+                        statements.append(variableDecl);
+
+                        jcClassDecl.defs = statements.toList();
+                    }
                 }
 
                 super.visitClassDef(jcClassDecl);
