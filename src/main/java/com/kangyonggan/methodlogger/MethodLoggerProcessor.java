@@ -15,8 +15,6 @@ import java.util.Set;
 
 
 /**
- * 监控注解处理器
- *
  * @author kangyonggan
  * @since 9/28/17
  */
@@ -28,8 +26,6 @@ public class MethodLoggerProcessor extends AbstractProcessor {
     private Trees trees;
 
     /**
-     * 初始化，获取编译环境
-     *
      * @param env
      */
     @Override
@@ -41,19 +37,14 @@ public class MethodLoggerProcessor extends AbstractProcessor {
     }
 
     /**
-     * 处理注解
-     *
      * @param annotations
      * @param env
      * @return
      */
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment env) {
-        // 处理有@MethodLogger注解的元素
         for (Element element : env.getElementsAnnotatedWith(MethodLogger.class)) {
-            // 只处理作用在方法上的注解
             if (element.getKind() == ElementKind.METHOD) {
-                // 日志通道
                 AnnotationMirror am = element.getAnnotationMirrors().get(0);
 
                 String value = "com.kangyonggan.methodlogger.ConsoleMethodLoggerHandler";
@@ -68,14 +59,11 @@ public class MethodLoggerProcessor extends AbstractProcessor {
                 String channelPackage = value.substring(0, value.lastIndexOf("."));
                 String channelName = value.substring(value.lastIndexOf(".") + 1);
 
-                // 导入所需要的包
                 methodLoggerHelp.importPackage(element, channelPackage, channelName);
 
-                // 声明成员变量
                 String packageName = ((JCTree.JCClassDecl) trees.getTree(element.getEnclosingElement())).sym.toString();
                 methodLoggerHelp.defineVariable(element, channelName, packageName);
 
-                // 生成增强代码
                 methodLoggerHelp.generateCode(element, channelName);
             }
         }

@@ -19,8 +19,6 @@ public class ConsoleMethodLoggerHandler {
     }
 
     /**
-     * 打印入参
-     *
      * @param params
      */
     public void logBefore(Object... params) {
@@ -34,8 +32,6 @@ public class ConsoleMethodLoggerHandler {
     }
 
     /**
-     * 打印出参
-     *
      * @param methodName
      */
     public void logAfter(String methodName) {
@@ -43,8 +39,6 @@ public class ConsoleMethodLoggerHandler {
     }
 
     /**
-     * 打印出参
-     *
      * @param methodName
      * @param returnObj
      */
@@ -53,8 +47,6 @@ public class ConsoleMethodLoggerHandler {
     }
 
     /**
-     * 打印耗时
-     *
      * @param methodName
      * @param startTime
      * @param endTime
@@ -64,9 +56,6 @@ public class ConsoleMethodLoggerHandler {
     }
 
     /**
-     * 默认打印方式
-     * 例：[INFO ] 2017-10-12 11:19:35.632 [com.kangyonggan.app.future.biz.UserService] - <login> method args：[1001]
-     *
      * @param msg
      */
     public void info(String msg) {

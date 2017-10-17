@@ -14,8 +14,6 @@ import java.lang.annotation.Target;
 public @interface MethodLogger {
 
     /**
-     * 日志输出通道，默认输出到控制台
-     *
      * @return
      */
     Class<? extends ConsoleMethodLoggerHandler> value() default ConsoleMethodLoggerHandler.class;

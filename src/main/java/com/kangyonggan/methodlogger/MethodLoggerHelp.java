@@ -29,10 +29,8 @@ public class MethodLoggerHelp {
     }
 
     /**
-     * 导包, 如：import com.kangyonggan.methodlogger.ConsoleMethodLoggerHandler;
-     *
      * @param element
-     * @param className 类名，如：ConsoleMethodLoggerHandler
+     * @param className
      */
     public void importPackage(Element element, String packageName, String className) {
         JCTree.JCCompilationUnit cu = (JCTree.JCCompilationUnit) trees.getPath(element.getEnclosingElement()).getCompilationUnit();
@@ -50,11 +48,9 @@ public class MethodLoggerHelp {
     }
 
     /**
-     * 声明一个成员变量，如：private static ConsoleMethodLoggerHandler consoleMethodLoggerHandler = new ConsoleMethodLoggerHandler("包名");
-     *
      * @param element
-     * @param className 类名，如：ConsoleMethodLoggerHandler
-     * @param args      参数，如："包名"
+     * @param className
+     * @param args
      */
     public void defineVariable(Element element, String className, Object... args) {
         JCTree tree = (JCTree) trees.getTree(element.getEnclosingElement());
@@ -87,7 +83,6 @@ public class MethodLoggerHelp {
                         argList.append(argsExpr);
                     }
 
-                    // 判断是不是内部类
                     int modifiers = Flags.PRIVATE;
                     if (jcClassDecl.sym != null) {
                         if (jcClassDecl.sym.flatname.toString().equals(jcClassDecl.sym.fullname.toString())) {
@@ -109,19 +104,6 @@ public class MethodLoggerHelp {
     }
 
     /**
-     * 生成增强代码
-     * <p>
-     * consoleMethodLoggerHandler.logBefore(入参);
-     * Long methodLoggerStartTime = System.currentTimeMillis();
-     * <p>
-     * ...
-     * 原来的代码块
-     * ...
-     * <p>
-     * Long methodLoggerEndTime = System.currentTimeMillis();
-     * consoleMethodLoggerHandler.logAfter(出参);
-     * consoleMethodLoggerHandler.logTime(methodLoggerStartTime, methodLoggerEndTime);
-     *
      * @param element
      */
     public void generateCode(Element element, String className) {
@@ -129,9 +111,6 @@ public class MethodLoggerHelp {
         String varName = className.substring(0, 1).toLowerCase() + className.substring(1);
 
         tree.accept(new TreeTranslator() {
-            /**
-             * 参数
-             */
             List<JCTree.JCExpression> params = List.nil();
 
             @Override
@@ -150,53 +129,36 @@ public class MethodLoggerHelp {
             public void visitBlock(JCTree.JCBlock tree) {
                 ListBuffer<JCTree.JCStatement> statements = new ListBuffer();
 
-                /**
-                 * 创建代码（打印入参）：consoleMethodLoggerHandler.logBefore(params);
-                 */
                 JCTree.JCFieldAccess fieldAccess = treeMaker.Select(treeMaker.Ident(names.fromString(varName)), names.fromString("logBefore"));
                 JCTree.JCMethodInvocation methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, params);
                 JCTree.JCExpressionStatement code = treeMaker.Exec(methodInvocation);
                 statements.append(code);
 
-                /**
-                 * 创建代码（开始时间）：Long methodLoggerStartTime = System.currentTimeMillis();
-                 */
                 JCTree.JCExpression typeExpr = treeMaker.Ident(names.fromString("Long"));
                 fieldAccess = treeMaker.Select(treeMaker.Ident(names.fromString("System")), names.fromString("currentTimeMillis"));
                 methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.nil());
                 JCTree.JCVariableDecl variableDecl = treeMaker.VarDef(treeMaker.Modifiers(0), names.fromString("methodLoggerStartTime"), typeExpr, methodInvocation);
                 statements.append(variableDecl);
 
-                // 把原来的方法体写回去
                 for (int i = 0; i < tree.getStatements().size(); i++) {
 
                     if (i == tree.getStatements().size() - 1) {
-                        /**
-                         * 创建代码（结束时间）：Long methodLoggerEndTime = System.currentTimeMillis();
-                         */
                         typeExpr = treeMaker.Ident(names.fromString("Long"));
                         fieldAccess = treeMaker.Select(treeMaker.Ident(names.fromString("System")), names.fromString("currentTimeMillis"));
                         methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.nil());
                         variableDecl = treeMaker.VarDef(treeMaker.Modifiers(0), names.fromString("methodLoggerEndTime"), typeExpr, methodInvocation);
                         statements.append(variableDecl);
 
-                        /**
-                         * 创建代码（打印出参）：consoleMethodLoggerHandler.logAfter(returnObj);
-                         */
                         fieldAccess = treeMaker.Select(treeMaker.Ident(names.fromString(varName)), names.fromString("logAfter"));
                         try {
                             JCTree.JCReturn jcReturn = (JCTree.JCReturn) tree.getStatements().get(i);
                             methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.of(params.get(0), jcReturn.getExpression()));
                         } catch (Exception e) {
-                            // 无返回值
                             methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.of(params.get(0)));
                         }
                         code = treeMaker.Exec(methodInvocation);
                         statements.append(code);
 
-                        /**
-                         * 创建代码（打印耗时）：consoleMethodLoggerHandler.logTime(methodLoggerStartTime, methodLoggerEndTime);
-                         */
                         fieldAccess = treeMaker.Select(treeMaker.Ident(names.fromString(varName)), names.fromString("logTime"));
                         methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.of(params.get(0), treeMaker.Ident(names.fromString("methodLoggerStartTime")), treeMaker.Ident(names.fromString("methodLoggerEndTime"))));
                         code = treeMaker.Exec(methodInvocation);
