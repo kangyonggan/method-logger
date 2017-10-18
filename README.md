@@ -8,6 +8,17 @@
 > * 优点2: 以前的运行时注解打印入参出参，是依赖于spring的，而此注解即使只是一个main方法都可以使用。
  
 ### 使用方法
+添加依赖
+
+```
+<dependency>
+    <groupId>com.kangyonggan</groupId>
+    <artifactId>method-logger</artifactId>
+    <version>1.0</version>
+</dependency>
+```
+
+注解使用
 
 ```
 package com.kangyonggan.app.monitor.test;
