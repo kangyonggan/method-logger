@@ -6,7 +6,7 @@
 
     <groupId>com.kangyonggan</groupId>
     <artifactId>method-logger</artifactId>
-    <version>1.0</version>
+    <version>1.2</version>
 
     <name>Method Logger</name>
     <description>使用编译时注解打印方法入参出参和耗时</description>

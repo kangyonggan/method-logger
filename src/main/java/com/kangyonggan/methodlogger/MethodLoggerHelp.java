@@ -111,7 +111,9 @@ public class MethodLoggerHelp {
         String varName = className.substring(0, 1).toLowerCase() + className.substring(1);
 
         tree.accept(new TreeTranslator() {
-            List<JCTree.JCExpression> params = List.nil();
+            private List<JCTree.JCExpression> params = List.nil();
+
+            private JCTree.JCPrimitiveTypeTree returnType;
 
             @Override
             public void visitMethodDef(JCTree.JCMethodDecl jcMethodDecl) {
@@ -120,6 +122,7 @@ public class MethodLoggerHelp {
                 for (JCTree.JCVariableDecl decl : jcMethodDecl.getParameters()) {
                     params = params.append(treeMaker.Ident(decl));
                 }
+                returnType = (JCTree.JCPrimitiveTypeTree) jcMethodDecl.restype;
 
                 super.visitMethodDef(jcMethodDecl);
 
@@ -141,34 +144,64 @@ public class MethodLoggerHelp {
                 statements.append(variableDecl);
 
                 for (int i = 0; i < tree.getStatements().size(); i++) {
+                    JCTree.JCStatement jcStatement = tree.getStatements().get(i);
+                    boolean hasReturnValue = false;
 
-                    if (i == tree.getStatements().size() - 1) {
-                        typeExpr = treeMaker.Ident(names.fromString("Long"));
-                        fieldAccess = treeMaker.Select(treeMaker.Ident(names.fromString("System")), names.fromString("currentTimeMillis"));
-                        methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.nil());
-                        variableDecl = treeMaker.VarDef(treeMaker.Modifiers(0), names.fromString("methodLoggerEndTime"), typeExpr, methodInvocation);
+                    if (jcStatement instanceof JCTree.JCReturn) {
+                        JCTree.JCReturn jcReturn = (JCTree.JCReturn) jcStatement;
+                        typeExpr = treeMaker.Ident(names.fromString("Object"));
+                        variableDecl = treeMaker.VarDef(treeMaker.Modifiers(0), names.fromString("monitorReturnValue"), typeExpr, jcReturn.getExpression());
                         statements.append(variableDecl);
-
-                        fieldAccess = treeMaker.Select(treeMaker.Ident(names.fromString(varName)), names.fromString("logAfter"));
-                        try {
-                            JCTree.JCReturn jcReturn = (JCTree.JCReturn) tree.getStatements().get(i);
-                            methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.of(params.get(0), jcReturn.getExpression()));
-                        } catch (Exception e) {
-                            methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.of(params.get(0)));
-                        }
-                        code = treeMaker.Exec(methodInvocation);
-                        statements.append(code);
-
-                        fieldAccess = treeMaker.Select(treeMaker.Ident(names.fromString(varName)), names.fromString("logTime"));
-                        methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.of(params.get(0), treeMaker.Ident(names.fromString("methodLoggerStartTime")), treeMaker.Ident(names.fromString("methodLoggerEndTime"))));
-                        code = treeMaker.Exec(methodInvocation);
-                        statements.append(code);
+                        hasReturnValue = true;
                     }
 
-                    statements.append(tree.getStatements().get(i));
+                    if (i == tree.getStatements().size() - 1) {
+                        if (hasReturnValue) {
+                            process(statements, hasReturnValue);
+
+                            JCTree.JCReturn jcReturn = (JCTree.JCReturn) jcStatement;
+                            JCTree.JCTypeCast jcTypeCast = treeMaker.TypeCast(returnType, treeMaker.Ident(names.fromString("monitorReturnValue")));
+                            jcReturn.expr = jcTypeCast;
+                            statements.append(jcReturn);
+                        } else {
+                            process(statements, hasReturnValue);
+                            statements.append(tree.getStatements().get(i));
+                        }
+                    } else {
+                        statements.append(tree.getStatements().get(i));
+                    }
+                }
+
+                if (tree.getStatements().size() <= 0) {
+                    process(statements, false);
                 }
 
                 result = treeMaker.Block(0, statements.toList());
+            }
+
+            private void process(ListBuffer<JCTree.JCStatement> statements, boolean hasReturnValue) {
+                JCTree.JCExpression typeExpr;
+                JCTree.JCFieldAccess fieldAccess;
+                JCTree.JCMethodInvocation methodInvocation;
+                JCTree.JCVariableDecl variableDecl;
+                JCTree.JCExpressionStatement code;
+                typeExpr = treeMaker.Ident(names.fromString("Long"));
+                fieldAccess = treeMaker.Select(treeMaker.Ident(names.fromString("System")), names.fromString("currentTimeMillis"));
+                methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.nil());
+                variableDecl = treeMaker.VarDef(treeMaker.Modifiers(0), names.fromString("methodLoggerEndTime"), typeExpr, methodInvocation);
+                statements.append(variableDecl);
+
+                fieldAccess = treeMaker.Select(treeMaker.Ident(names.fromString(varName)), names.fromString("logTime"));
+                methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.of(params.get(0), treeMaker.Ident(names.fromString("methodLoggerStartTime")), treeMaker.Ident(names.fromString("methodLoggerEndTime"))));
+                code = treeMaker.Exec(methodInvocation);
+                statements.append(code);
+
+                if (hasReturnValue) {
+                    fieldAccess = treeMaker.Select(treeMaker.Ident(names.fromString(varName)), names.fromString("logAfter"));
+                    methodInvocation = treeMaker.Apply(List.nil(), fieldAccess, List.of(params.get(0), treeMaker.Ident(names.fromString("monitorReturnValue"))));
+                    code = treeMaker.Exec(methodInvocation);
+                    statements.append(code);
+                }
             }
         });
     }
