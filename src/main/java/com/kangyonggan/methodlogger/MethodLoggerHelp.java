@@ -113,7 +113,7 @@ public class MethodLoggerHelp {
         tree.accept(new TreeTranslator() {
             private List<JCTree.JCExpression> params = List.nil();
 
-            private JCTree.JCPrimitiveTypeTree returnType;
+            private JCTree.JCExpression returnType;
 
             @Override
             public void visitMethodDef(JCTree.JCMethodDecl jcMethodDecl) {
@@ -122,7 +122,7 @@ public class MethodLoggerHelp {
                 for (JCTree.JCVariableDecl decl : jcMethodDecl.getParameters()) {
                     params = params.append(treeMaker.Ident(decl));
                 }
-                returnType = (JCTree.JCPrimitiveTypeTree) jcMethodDecl.restype;
+                returnType = jcMethodDecl.restype;
 
                 super.visitMethodDef(jcMethodDecl);
 
