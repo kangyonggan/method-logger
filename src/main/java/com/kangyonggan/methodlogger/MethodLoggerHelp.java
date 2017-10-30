@@ -10,6 +10,7 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 /**
@@ -204,6 +205,17 @@ public class MethodLoggerHelp {
                 }
             }
         });
+    }
+
+    public AnnotationMirror getAnnotationMirror(java.util.List<? extends AnnotationMirror> annotationMirrors) {
+        for (AnnotationMirror annotationMirror : annotationMirrors) {
+            if ("com.kangyonggan.methodlogger.MethodLogger".equals(annotationMirror.getAnnotationType().toString())) {
+                return annotationMirror;
+            }
+
+        }
+
+        return null;
     }
 
 }

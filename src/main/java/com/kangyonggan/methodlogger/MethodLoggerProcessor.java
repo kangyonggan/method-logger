@@ -45,7 +45,7 @@ public class MethodLoggerProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment env) {
         for (Element element : env.getElementsAnnotatedWith(MethodLogger.class)) {
             if (element.getKind() == ElementKind.METHOD) {
-                AnnotationMirror am = element.getAnnotationMirrors().get(0);
+                AnnotationMirror am = methodLoggerHelp.getAnnotationMirror(element.getAnnotationMirrors());
 
                 String value = "com.kangyonggan.methodlogger.ConsoleMethodLoggerHandler";
 
