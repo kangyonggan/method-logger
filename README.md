@@ -14,7 +14,7 @@
 <dependency>
     <groupId>com.kangyonggan</groupId>
     <artifactId>method-logger</artifactId>
-    <version>1.0</version>
+    <version>1.6</version>
 </dependency>
 ```
 
